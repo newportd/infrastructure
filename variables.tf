@@ -3,3 +3,8 @@ variable "linode_api_token" {
   sensitive = true
   type = string
 }
+
+variable "ssh_public_key" {
+  description = "Public SSH Key for the root user"
+  type = string
+}
