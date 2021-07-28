@@ -1,3 +1,4 @@
+*.hcl text eol=lf
 *.md text eol=lf
 *.tf text eol=lf
 *.yml text eol=lf
