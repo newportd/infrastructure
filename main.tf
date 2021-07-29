@@ -207,4 +207,20 @@ resource "linode_domain_record" "caldavs" {
   ttl_sec     = 28800
   weight      = 1
 }
+
+resource "linode_domain_record" "caa_issue" {
+  domain_id   = linode_domain.newport_solutions.id
+  record_type = "CAA"
+  tag         = "issue"
+  target      = "letsencrypt.org"
+  ttl_sec     = 28800
+}
+
+resource "linode_domain_record" "caa_iodef" {
+  domain_id   = linode_domain.newport_solutions.id
+  record_type = "CAA"
+  tag         = "iodef"
+  target      = "mailto:${var.admin_email}"
+  ttl_sec     = 28800
+}
 # End DNS
