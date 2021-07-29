@@ -4,6 +4,7 @@
 provider "registry.terraform.io/linode/linode" {
   version = "1.19.1"
   hashes = [
+    "h1:UNXJmnbYmZuwMl1q8O/ix2NcyvEI29cAg91ZOjb1qXU=",
     "h1:cu3Vi6IUJOaCKtD6l8cQolJXlKzqIsdTvQbXxWfZ2rs=",
     "zh:1b9f22c1882b1451492341ef28d6776f606a244e8a58340c21dd6949015a229d",
     "zh:2557f3415f85c9570e44fa7f147269d12c1e4bf32b5b21b09a347dcf574967de",
