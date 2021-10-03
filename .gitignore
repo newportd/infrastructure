@@ -1,5 +1,11 @@
+# terraform stuff
 .terraform/
 
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
 *.tfvars
+
+# ansible stuff
+.vault
+ansible.cfg
+
