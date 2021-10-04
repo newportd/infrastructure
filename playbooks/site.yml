@@ -1,0 +1,148 @@
+---
+
+- hosts: all
+
+  handlers:
+    - name: Restart iptables
+      ansible.builtin.service:
+        name: iptables
+        state: restarted
+
+    - name: Restart ip6tables
+      ansible.builtin.service:
+        name: ip6tables
+        state: restarted
+
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+
+    - name: Reload daemons
+      ansible.builtin.command:
+        cmd: /usr/bin/systemctl daemon-reload
+
+  tasks:
+    - name: Set the hostname
+      ansible.builtin.hostname:
+        name: "{{ inventory_hostname }}.newport.solutions"
+
+    - name: Disable swap
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^\/dev\/sdb'
+        state: absent
+
+    - name: Upgrade all packages
+      community.general.pacman:
+        update_cache: yes
+        upgrade: yes
+    
+    - name: Install common packages
+      community.general.pacman:
+        name:
+          - rxvt-unicode-terminfo
+        state: latest
+
+    - name: Configure sshd
+      ansible.builtin.template:
+        dest: /etc/ssh/sshd_config
+        group: root
+        mode: 0644
+        owner: root
+        src: sshd_config.j2
+      notify: Restart sshd
+
+    - name: Configure host ipv4 firewall
+      ansible.builtin.template:
+        dest: /etc/iptables/iptables.rules
+        group: root
+        mode: 0644
+        owner: root
+        src: iptables.rules.j2
+      notify: Restart iptables
+
+    - name: Start and enable host ipv4 firewall
+      ansible.builtin.service:
+        enabled: yes
+        name: iptables
+        state: started
+
+    - name: Configure host ipv6 firewall
+      ansible.builtin.template:
+        dest: /etc/iptables/ip6tables.rules
+        group: root
+        mode: 0644
+        owner: root
+        src: ip6tables.rules.j2
+      notify: Restart ip6tables
+
+    - name: Start and enable host ipv6 firewall
+      ansible.builtin.service:
+        enabled: yes
+        name: ip6tables
+        state: started
+
+    - name: Install www packages
+      community.general.pacman:
+        name:
+          - certbot
+          - nginx-mainline
+        state: latest
+    
+    - name: Create letsencrypt challenge directory
+      ansible.builtin.file:
+        group: http
+        mode: 0755
+        owner: http
+        path: /srv/http/letsencrypt
+        state: directory
+
+    - name: Configure nginx
+      ansible.builtin.template:
+        dest: /etc/nginx/nginx.conf
+        group: root
+        mode: 0644
+        owner: root
+        src: nginx.conf.j2
+      notify: Restart nginx
+
+    - name: Create nginx configuration drop-in directory
+      ansible.builtin.file:
+        group: root
+        mode: 0755
+        owner: root
+        path: /etc/nginx/conf.d
+        state: directory
+
+    - name: Start and enable nginx
+      ansible.builtin.service:
+        enabled: yes
+        name: nginx
+        state: started
+    
+    - name: Configure Let's Encrypt certificate renewal
+      ansible.builtin.copy:
+        dest: "{{ item.dest }}"
+        group: root
+        mode: 0644
+        owner: root
+        src: "{{ item.src }}"
+      loop:
+        - { src: "certbot.service", dest: "/etc/systemd/system/certbot.service" }
+        - { src: "certbot.timer", dest: "/etc/systemd/system/certbot.timer" }
+      notify: Daemon reload
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Start and enable certbot.timer
+      ansible.builtin.service:
+        enabled: yes
+        name: certbot.timer
+        state: started

@@ -1,0 +1,6 @@
+[Unit]
+Description=Let's Encrypt Certificate Renewal
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/certbot renew --agree-tos

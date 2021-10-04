@@ -1,0 +1,10 @@
+[Unit]
+Description=Let's Encrypt Certificate Renewal Scheduler
+
+[Timer]
+OnCalendar=0/12:00:00
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target
